@@ -95,6 +95,17 @@ class TreeItemModel(QtCore.QAbstractItemModel):
         
         return QtCore.QVariant()
 
+    def insertNode( self, parent):
+        parentNode = parent.internalPointer()
+        if parentNode is None:
+            parentNode = self._rootNode
+        children = parentNode._childNodes
+        newNode = TreeNode( data='TEST', parent=parentNode )
+        newRow = parentNode.childCount()
+        # Insert the Node
+        self.beginInsertRows( parent, newRow, newRow )
+        children.insert(newRow, newNode)
+        self.endInsertRows( )
     
 if __name__ == "__main__":
     app = QtGui.QApplication([])
@@ -105,7 +116,13 @@ if __name__ == "__main__":
     tv = QtGui.QTreeView(dialog)
     tv.setModel(model)
     layout.addWidget(tv)
+    index = model.index(0,0, QtCore.QModelIndex( ))
+    model.insertNode(index)
+    
     dialog.exec_()
+
+    
+    
 
     app.closeAllWindows()
     
