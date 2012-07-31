@@ -52,7 +52,7 @@
   </layout>
   <action name="actionAjout">
    <property name="text">
-    <string>Ajout</string>
+    <string>&amp;Ajout</string>
    </property>
   </action>
  </widget>
