@@ -30,9 +30,9 @@ class TreeManipulator(QGroupBox):
             
     def ctxMenu(self, point):
         print "OK"
-        menu = QMenu(self)        
-        menu.addAction(self.actionAjout);
-        menu.popup(self.ui.treeView.mapToGlobal(point))
+        self.menu = QMenu(self.ui.treeView)        
+        self.menu.addAction(self.actionAjout);
+        self.menu.popup(self.ui.treeView.mapToGlobal(point))
 
 if __name__ == "__main__":
 	app = QApplication(sys.argv)
