@@ -2,14 +2,19 @@
 from PyQt4 import QtGui, QtCore
 
 class TreeNode( object ):
-    def __init__(self, parent=None, data=None):
+    def __init__(self, parent=None, name=""):
         assert isinstance( parent, TreeNode) or (parent is None)
-
+        assert isinstance( name, (str,unicode) )
         # Contents
-        self._data = data
+        self._name = name
+        self._type = self.__class__.__name__
         # Structure
         self._parentNode = parent
         self._childNodes = []
+
+    def __str__(self):
+        assert isinstance( self._name, (str,unicode) )
+        return _name
 
     def appendChild(self, node):
         assert isinstance( node, TreeNode )
@@ -17,11 +22,13 @@ class TreeNode( object ):
         node._parentNode = self
         self._childNodes.append(node)
 
-    def setData( self, value ):
-        self._data = value
- 
-    def getData( self ):
-        return self._data
+    def name( self ):
+        assert isinstance( self._name, (str,unicode) )
+        return self._name
+
+    def type( self ):
+        assert isinstance( self._type, (str,unicode) )
+        return self._type
 
     def row(self):
         if self._parentNode:
@@ -39,8 +46,8 @@ class TreeItemModel(QtCore.QAbstractItemModel):
     def __init__(self, rootNode=None, parent=None):
         super(TreeItemModel, self).__init__(parent)
         if rootNode is None:
-            rootNode = TreeNode( data='FakeRoot' )
-            rootNode.appendChild( TreeNode( data='Untitled', parent=rootNode ) )
+            rootNode = TreeNode()
+            rootNode.appendChild( TreeNode(name="Untitled", parent=rootNode ) )
         self._rootNode       = rootNode
         
     def index(self, row, column, parent):
@@ -91,20 +98,21 @@ class TreeItemModel(QtCore.QAbstractItemModel):
 
         node = index.internalPointer()
         if role == QtCore.Qt.DisplayRole:
-            return str(node.getData())
+            return str(node.name())
         
         return QtCore.QVariant()
 
-    def insertNode( self, parent):
+    def insertNode( self, parent, node = None):
         parentNode = parent.internalPointer()
         if parentNode is None:
             parentNode = self._rootNode
         children = parentNode._childNodes
-        newNode = TreeNode( data='TEST', parent=parentNode )
+        if not node:
+            node = TreeNode( data='TEST', parent=parentNode )
         newRow = parentNode.childCount()
         # Insert the Node
         self.beginInsertRows( parent, newRow, newRow )
-        children.insert(newRow, newNode)
+        children.insert(newRow, node)
         self.endInsertRows( )
     
 if __name__ == "__main__":
@@ -120,9 +128,6 @@ if __name__ == "__main__":
     model.insertNode(index)
     
     dialog.exec_()
-
     
-    
-
     app.closeAllWindows()
     

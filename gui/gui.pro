@@ -1,1 +1,2 @@
-FORMS += tree.ui
+FORMS += tree.ui \
+    dlgPackage.ui
