@@ -9,6 +9,15 @@ class UmlPackage(TreeNode):
         self.stereotype = ""
         self.description = ""
         
+class UmlClassView(TreeNode):
+    def __init__(self, parent=None):
+        super(UmlClassView, self).__init__(parent, name="")
+        
+        # Contents
+        self.stereotype = ""
+        self.description = ""
+
+
         
 class UmlClass(TreeNode):
     def __init__(self, parent=None):

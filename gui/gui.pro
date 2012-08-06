@@ -1,2 +1,3 @@
 FORMS += tree.ui \
-    dlgPackage.ui
+    dlgPackage.ui \
+    dlgClassView.ui
