@@ -9,57 +9,84 @@ from UML import *
 from TreeNode import *
 
 class DlgPackage(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, package=None):
         super (DlgPackage, self).__init__(parent)
         self.ui = Ui_DlgPackage()
         self.ui.setupUi(self)
+        
+        if package is None:
+            self._package = UmlPackage(parent, "Untitled")
+        else:
+            assert isinstance( package, UmlPackage)
+            self.ui.ldtNom.setText(package.name())
+            self._package = package
+
+    def accept(self):
+        self._package.setName(str(self.ui.ldtNom.text()))
+        QDialog.accept(self)     
+
     def getNodePackage(self, parent):
-        node = UmlPackage(parent, str(self.ui.ldtNom.text()))
-        return node
+        self._package.setParent(parent)
+        return self._package
+
+class CtlPackage(QObject):
+
+    def __init__ (self, parent = None, model = None, index = None):
+        super (CtlPackage, self).__init__(parent)
+        assert isinstance( parent, QObject)
+        assert isinstance( model, TreeItemModel)
+        assert isinstance( index, QModelIndex)
+        node = index.internalPointer()
+        assert isinstance( node, UmlPackage)
+        self._actions = []
+        self._package = node
+        self._model = model
+        self._index = index
+        action = QAction("Ajout Package...", self);
+        QObject.connect(action, SIGNAL("triggered()"), self.ajoutPackage)
+        self._actions.append(action)
+        action = QAction("Edit Package...", self);
+        QObject.connect(action, SIGNAL("triggered()"), self.editPackage)
+        self._actions.append(action)
+
+    def populate(self, menu):
+        assert isinstance( menu, QMenu)
+        for item in self._actions:
+            menu.addAction(item)
+        
+    def ajoutPackage(self):
+        dlg = DlgPackage()
+        if dlg.exec_():
+            newNode = dlg.getNodePackage(self._package)
+            self._model.insertNode(self._index, newNode)
+        pass
+ 
+        
+    def editPackage(self):
+        dlg = DlgPackage(package = self._package)
+        dlg.exec_()      
+
 
 class TreeManipulator(QGroupBox):
     def __init__(self, parent=None):
         super (TreeManipulator, self).__init__(parent)
         self.ui = Ui_GroupBox()
         self.ui.setupUi(self)
-        self.model = TreeItemModel()
+        self.model = TreeItemModel(rootNode = UmlPackage(name = "Untitled"))
         self.ui.treeView.setModel(self.model)
         self.ui.treeView.setContextMenuPolicy(Qt.CustomContextMenu)
         
-
-        #index = self.model.index(0,0, QtCore.QModelIndex( ))
-        #self.model.insertNode(index)
-        QObject.connect(self.ui.pushButton, SIGNAL("clicked()"), self.ajout)
         QObject.connect(self.ui.treeView,SIGNAL('customContextMenuRequested(QPoint)'), self.ctxMenu)
 
-        self.actions = dict() 
-        
-        # action 1
-        action = QAction("Ajout", self);
-        QObject.connect(action, SIGNAL("triggered()"), self.ajout)
-        self.actions["TreeNode"] = action
-        # action 2
-        action = QAction("Ajout Class", self);
-        QObject.connect(action, SIGNAL("triggered()"), self.ajout)
-        self.actions["UmlPackage"] = action
-        
-    def ajout(self):
-        # get parent
-        indices = self.ui.treeView.selectedIndexes()
-        assert len(indices) == 1
-        parentNode = indices[0].internalPointer()                
-        dlg = DlgPackage()
-        if dlg.exec_():
-            newNode = dlg.getNodePackage(parentNode)
-            self.model.insertNode(indices[0], newNode)
             
     def ctxMenu(self, point):
         indices = self.ui.treeView.selectedIndexes()
         assert len(indices) == 1
-        node = indices[0].internalPointer()
         self.menu = QMenu(self.ui.treeView)
-        typeNode = node.type()
-        self.menu.addAction(self.actions[typeNode])
+        node = indices[0].internalPointer()
+        if node.type() == "UmlPackage":
+            ctl = CtlPackage(self.menu, self.model, indices[0])
+            ctl.populate(self.menu)
         self.menu.popup(self.ui.treeView.mapToGlobal(point))
 
 if __name__ == "__main__":

@@ -26,6 +26,12 @@ class TreeNode( object ):
         assert isinstance( self._name, (str,unicode) )
         return self._name
 
+    def setName( self, name="Untitled" ):
+        assert isinstance( name, (str,unicode) )
+        assert isinstance( self._name, (str,unicode) )        
+        self._name = name
+
+
     def type( self ):
         assert isinstance( self._type, (str,unicode) )
         return self._type
@@ -37,6 +43,11 @@ class TreeNode( object ):
 
     def parent( self ):
         return self._parentNode
+
+    def setParent( self, parent ):
+        assert isinstance( parent, TreeNode )
+        self._parentNode = parent
+
     def child(self, row):
         return self._childNodes[row]
     def childCount(self):
@@ -45,10 +56,12 @@ class TreeNode( object ):
 class TreeItemModel(QtCore.QAbstractItemModel):
     def __init__(self, rootNode=None, parent=None):
         super(TreeItemModel, self).__init__(parent)
-        if rootNode is None:
-            rootNode = TreeNode()
-            rootNode.appendChild( TreeNode(name="Untitled", parent=rootNode ) )
-        self._rootNode       = rootNode
+        fakeRootNode = TreeNode()
+        if rootNode is None:                 
+            fakeRootNode.appendChild(TreeNode(name="Untitled", parent=rootNode))
+        else:
+            fakeRootNode.appendChild(rootNode)
+        self._rootNode = fakeRootNode
         
     def index(self, row, column, parent):
         if not self.hasIndex(row, column, parent):
@@ -99,6 +112,9 @@ class TreeItemModel(QtCore.QAbstractItemModel):
         node = index.internalPointer()
         if role == QtCore.Qt.DisplayRole:
             return str(node.name())
+        #elif role == QtCore.Qt.DecorationRole:
+        #return QtGui.QIcon("/tmp/umbrello-1.5.8/umbrello/pics/CVpublic_var.png")
+
         
         return QtCore.QVariant()
 
