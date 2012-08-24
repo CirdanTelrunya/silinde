@@ -3,7 +3,8 @@
 
 from PyQt4 import QtGui, QtCore
 from TreeNode import TreeNode
-
+import pickle
+import string
 
 class TreeNodeItemModel(QtCore.QAbstractItemModel):
 
@@ -84,18 +85,76 @@ class TreeNodeItemModel(QtCore.QAbstractItemModel):
 	# end if
     # end def data
 
-    def insertNode(self, parent, node):
+    def insertNode(self, parent, node, row = None):
+        if not parent.isValid():
+            return False
         assert isinstance(node, TreeNode)
+        assert isinstance(parent, QtCore.QModelIndex)
         parentNode = parent.internalPointer()
         if parentNode is None:
             parentNode = self._rootNode
 	# end if
-        newRow = parentNode.childCount()
+        if row is None:
+            row = parentNode.childCount()
         # Insert the Node
-        self.beginInsertRows(parent, newRow, newRow)
-        parentNode.insertChild(node, newRow)
+        self.beginInsertRows(parent, row, row)
+        parentNode.insertChild(node, row)
         self.endInsertRows()
     # end def insertNode
+
+    def removeRows(self, row, count, parent):
+        if not parent.isValid():
+            return False
+        parentNode = parent.internalPointer()
+        if parentNode is None:
+            parentNode = self._
+        self.beginRemoveRows(parent, row, row)
+        parentNode.removeChild(row)
+        self.endRemoveRows()
+
+        return True
+
+    def supportedDropActions(self):
+        return QtCore.Qt.MoveAction 
+
+    def flags(self, index):
+        defaultFlags = QtCore.QAbstractItemModel.flags(self, index)
+      
+        if index.isValid():
+            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsDragEnabled | \
+                    QtCore.Qt.ItemIsDropEnabled | defaultFlags
+          
+        else:
+            return QtCore.Qt.ItemIsDropEnabled | defaultFlags
+
+    def mimeTypes(self):
+        types = QtCore.QStringList()
+        types.append('text/plain')
+        return types
+
+    def mimeData(self, index):
+        node = index[0].internalPointer()
+        data = pickle.dumps(node)
+        mimeData = QtCore.QMimeData()
+        mimeData.setText(data)
+        return mimeData 
+        
+    def dropMimeData(self, mimedata, action, row, column, parent):
+        if not parent.isValid():
+            return False
+        node = parent.internalPointer()
+        assert isinstance(node, TreeNode)
+        newNode = pickle.loads(str(mimedata.text()))
+        
+        if action != QtCore.Qt.MoveAction:
+            return False
+
+        if node.canBeInserted(newNode):
+            self.insertNode(parent, newNode, row)
+            return True
+        else:
+            return False
+
 # end class TreeNodeItemModel
 
 
@@ -107,9 +166,16 @@ if __name__ == '__main__':
     layout = QtGui.QVBoxLayout(dialog)
     tv = QtGui.QTreeView(dialog)
     tv.setModel(model)
+    tv.dragEnabled()
+    tv.acceptDrops()
+    tv.showDropIndicator()
+    tv.setDragDropMode(QtGui.QAbstractItemView.InternalMove) 
+    
+
     layout.addWidget(tv)
     index = model.index(0, 0, QtCore.QModelIndex())
     model.insertNode(index, TreeNode('Plop'))
+    model.insertNode(index, TreeNode('Plip'))
     dialog.exec_()
     app.closeAllWindows()
 # end if

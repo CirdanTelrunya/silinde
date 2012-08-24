@@ -34,6 +34,14 @@ class TreeNode(object):
 	# end if
     # end def insertChild
 
+    def removeChild(self, row=None):
+        if row is None:
+            self._children.pop()
+        else:
+            assert (row < len(self._children))
+            self._children.pop(row)
+
+
     def name(self):
         assert isinstance(self._name, (str, unicode))
         return self._name
@@ -80,6 +88,14 @@ class TreeNode(object):
 	# end if
         return 0
     # end def row
+
+    def canBeInserted(self, node):
+        if isinstance(node, TreeNode):
+            return True
+        else:
+            return False
+        
+
 # end class TreeNode
 
 
