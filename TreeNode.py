@@ -13,6 +13,7 @@ class TreeNode(object):
         self._name = name
         self._type = self.__class__.__name__
         self._id = uuid4().hex
+        self._icon = None
         # Structure
         self._parent = parent
         self._children = []
@@ -26,12 +27,12 @@ class TreeNode(object):
     def insertChild(self, node, row=None):
         assert isinstance(node, TreeNode)
         node._parent = self
-        if row is None:
+        if row is None or row < 0:
             self._children.append(node)
         else:
             assert isinstance(row, int)
             self._children.insert(row, node)
-	# end if
+	# end if        
     # end def insertChild
 
     def removeChild(self, row=None):
@@ -40,7 +41,6 @@ class TreeNode(object):
         else:
             assert (row < len(self._children))
             self._children.pop(row)
-
 
     def name(self):
         assert isinstance(self._name, (str, unicode))
@@ -60,6 +60,13 @@ class TreeNode(object):
     def id(self):
         return self._id
     # end def id
+    
+    def icon(self):
+        return self._icon
+    
+    def setIcon(self, path):
+        assert isinstance(path, (str, unicode))
+        self._icon = path
 
     def parent(self):
         return self._parent

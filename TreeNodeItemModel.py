@@ -82,6 +82,11 @@ class TreeNodeItemModel(QtCore.QAbstractItemModel):
         node = index.internalPointer()
         if role == QtCore.Qt.DisplayRole:
             return str(node.name())
+        elif role == QtCore.Qt.DecorationRole:
+            if node.icon() is not None:
+                # TODO
+                QtGui.QIcon("open.xpm")
+
 	# end if
     # end def data
 
@@ -94,7 +99,7 @@ class TreeNodeItemModel(QtCore.QAbstractItemModel):
         if parentNode is None:
             parentNode = self._rootNode
 	# end if
-        if row is None:
+        if row is None or row < 0 :
             row = parentNode.childCount()
         # Insert the Node
         self.beginInsertRows(parent, row, row)
@@ -103,11 +108,13 @@ class TreeNodeItemModel(QtCore.QAbstractItemModel):
     # end def insertNode
 
     def removeRows(self, row, count, parent):
+        
         if not parent.isValid():
             return False
         parentNode = parent.internalPointer()
         if parentNode is None:
-            parentNode = self._
+            parentNode = self._rootNode
+        
         self.beginRemoveRows(parent, row, row)
         parentNode.removeChild(row)
         self.endRemoveRows()
@@ -121,7 +128,7 @@ class TreeNodeItemModel(QtCore.QAbstractItemModel):
         defaultFlags = QtCore.QAbstractItemModel.flags(self, index)
       
         if index.isValid():
-            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsDragEnabled | \
+            return QtCore.Qt.ItemIsDragEnabled | \
                     QtCore.Qt.ItemIsDropEnabled | defaultFlags
           
         else:
