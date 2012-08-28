@@ -5,6 +5,7 @@ from PyQt4 import QtGui, QtCore
 from TreeNode import TreeNode
 import pickle
 import string
+import icones
 
 class TreeNodeItemModel(QtCore.QAbstractItemModel):
 
@@ -85,7 +86,7 @@ class TreeNodeItemModel(QtCore.QAbstractItemModel):
         elif role == QtCore.Qt.DecorationRole:
             if node.icon() is not None:
                 # TODO
-                QtGui.QIcon("open.xpm")
+                return QtGui.QIcon(node.icon())
 
 	# end if
     # end def data
@@ -167,7 +168,10 @@ class TreeNodeItemModel(QtCore.QAbstractItemModel):
 
 if __name__ == '__main__':
     app = QtGui.QApplication([])
-    model = TreeNodeItemModel(TreeNode('Root'))
+    root = TreeNode('Root')
+    root.setIcon(":/icones/treeview.png")
+    root.insertChild(TreeNode('Plup'))
+    model = TreeNodeItemModel(root)
     dialog = QtGui.QDialog()
     dialog.setMinimumSize(300, 150)
     layout = QtGui.QVBoxLayout(dialog)
