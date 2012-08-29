@@ -12,7 +12,7 @@ class TreeNode(object):
         # Contents
         self._name = name
         self._type = self.__class__.__name__
-        self._id = uuid4().hex
+        self._id = uuid4().bytes
         self._icon = None
         # Structure
         self._parent = parent

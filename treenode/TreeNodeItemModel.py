@@ -5,7 +5,6 @@ from PyQt4 import QtGui, QtCore
 from TreeNode import TreeNode
 import pickle
 import string
-import icones
 
 class TreeNodeItemModel(QtCore.QAbstractItemModel):
 
@@ -169,7 +168,6 @@ class TreeNodeItemModel(QtCore.QAbstractItemModel):
 if __name__ == '__main__':
     app = QtGui.QApplication([])
     root = TreeNode('Root')
-    root.setIcon(":/icones/treeview.png")
     root.insertChild(TreeNode('Plup'))
     model = TreeNodeItemModel(root)
     dialog = QtGui.QDialog()
