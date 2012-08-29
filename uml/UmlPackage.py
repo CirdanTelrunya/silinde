@@ -9,6 +9,7 @@ from UmlPackageUi import Ui_DlgPackage
 
 
 class UmlPackageNode(TreeNode):
+    """ un commentaire"""
     def __init__(self, name='', parent=None):
         super(UmlPackageNode, self).__init__(name, parent)
         
