@@ -1,0 +1,3 @@
+
+FORMS += \
+    Package.ui
