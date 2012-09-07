@@ -6,7 +6,7 @@ from PyQt4.QtGui import *
 from treenode.TreeNode import TreeNode
 from treenode.TreeNodeItemModel import TreeNodeItemModel
 from UmlPackageUi import Ui_DlgPackage
-
+from UmlClassView import *
 
 class UmlPackageNode(TreeNode):
     """ un commentaire"""
@@ -28,10 +28,10 @@ class UmlPackageView(QDialog):
         else:
             assert isinstance( package, UmlPackageNode)
             self._package = package
-        self.ui.ldtNom.setText(self._package.name())
+        self.ui.ldtName.setText(self._package.name())
 
     def accept(self):
-        self._package.setName(str(self.ui.ldtNom.text()))
+        self._package.setName(str(self.ui.ldtName.text()))
         QDialog.accept(self)
 
     def getPackageNode(self):
@@ -69,6 +69,9 @@ class UmlPackageCtl(QObject):
         action = QAction("New package...", self)
         QObject.connect(action, SIGNAL("triggered()"), self.__newPackage)
         self._actions.append(action)
+        action = QAction("New class view...", self)
+        QObject.connect(action, SIGNAL("triggered()"), self.__newClassView)
+        self._actions.append(action)
         action = QAction("separator", self)
         action.setSeparator(True)
         self._actions.append(action)
@@ -84,6 +87,12 @@ class UmlPackageCtl(QObject):
         if dlg.exec_():
             newNode = dlg.getPackageNode()
             self._model.insertNode(self._index, newNode)
+
+    def __newClassView(self):
+        dlg = UmlClassViewView()
+        if dlg.exec_():
+            newNode = dlg.getClassViewNode()
+            self._model.insertNode(self._index, newNode)            
             
     def __editPackage(self):
         dlg = UmlPackageView(package = self._package)
@@ -108,6 +117,9 @@ class UmlPackageTree(QTreeView):
         if node.type() == "UmlPackageNode":
             ctl = UmlPackageCtl(self, self.model(), indices[0])
             ctl.populateMenu(menu)
+        elif node.type() == "UmlClassViewNode":
+            ctl = UmlClassViewCtl(self, self.model(), indices[0])
+            ctl.populateMenu(menu)            
         menu.popup(self.mapToGlobal(point))
         
 

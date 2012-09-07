@@ -1,3 +1,4 @@
 
 FORMS += \
-    Package.ui
+    Package.ui \
+    ClassView.ui
