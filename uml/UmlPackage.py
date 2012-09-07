@@ -3,12 +3,12 @@
 
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
-from treenode.TreeNode import TreeNode
+from UmlBase import UmlBase
 from treenode.TreeNodeItemModel import TreeNodeItemModel
 from UmlPackageUi import Ui_DlgPackage
 from UmlClassView import *
 
-class UmlPackageNode(TreeNode):
+class UmlPackageNode(UmlBase):
     """ un commentaire"""
     def __init__(self, name='', parent=None):
         super(UmlPackageNode, self).__init__(name, parent)

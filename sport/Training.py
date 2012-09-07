@@ -124,8 +124,9 @@ class TrainingTree(QTreeView):
 if __name__ == '__main__':
     app = QApplication([])
     soundMgr = SoundMgr()
-    soundMgr.add('anvil', '/usr/lib/openoffice/basis3.2/share/gallery/sounds/ANVIL.WAV')
-    soundMgr.add('kling', '/usr/lib/openoffice/basis3.2/share/gallery/sounds/kling.wav')
+    # soundMgr.add('anvil', '/usr/lib/openoffice/basis3.2/share/gallery/sounds/ANVIL.WAV')
+    # soundMgr.add('kling', '/usr/lib/openoffice/basis3.2/share/gallery/sounds/kling.wav')
+    soundMgr.add('kling', '/usr/lib/libreoffice/basis3.3/share/gallery/sounds/kling.wav')
     root = TrainingNode('training')
     model = TreeNodeItemModel(root)
     dialog = QDialog()
