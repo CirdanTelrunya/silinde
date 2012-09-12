@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*- 
 
+from PyQt4.QtCore import *
+from PyQt4 import QtGui
 from pygame import mixer
 import threading
+import sys
 
 class SoundMgr(object):
     class __SoundMgr():
@@ -60,27 +63,111 @@ class SoundWorker(threading.Thread):
         pass
         
 
+class QSoundWorker(QThread):
+    def __init__(self, parent = None, queue = None):
+        QThread.__init__(self, parent)
+        self._continue = True
+        assert isinstance(queue, SharedQueue)
+        self._queue = queue
+        self._mutex = QMutex()
+        
+    def stop(self):
+        self._mutex.lock()
+        self._continue = False
+        self._mutex.unlock()
+
+    def run(self):
+        while self._continue:
+            item = self._queue.get()
+            if item is not None:
+                assert isinstance(item, mixer.Sound)
+                item.play()
+                while mixer.get_busy():
+                    pass
+        pass
+
+class SharedQueue(object):
+    def __init__(self):
+        self._queue = []
+        self._mutex = QMutex()
+        self._condition = QWaitCondition()
+
+    def size(self):
+        self._mutex.lock();
+        size = len(self._queue)
+        self._mutex.unlock();
+        return size
+
+    def put(self, item):
+        self._mutex.lock();
+        self._queue.append(item)
+        self._condition.wakeAll();
+        self._mutex.unlock();
+        pass
+
+    def get(self):
+        self._mutex.lock();
+        if len(self._queue) == 0:
+            self._condition.wait(self._mutex);
+        item = self._queue.pop()
+        self._mutex.unlock();
+        return item
+        pass
+
+
+class TerminalViewer(QtGui.QWidget):
+    def __init__(self,parent=None):
+        QtGui.QWidget.__init__(self,parent)
+        # self.Label = QtGui.QLabel("Waiting for Something",self)
+        self.button = QtGui.QPushButton("OK", self)
+        self.queue = SharedQueue()
+        self.connect(self.button,SIGNAL("clicked ( ) "), self.Activated)
+        self.worker = QSoundWorker(self, self.queue)
+        self.worker.start()
+        mixer.init()
+        
+    def Activated(self):
+        print "OK"
+        self.queue.put(mixer.Sound("/usr/lib/libreoffice/basis3.3/share/gallery/sounds/kling.wav"));
+        
+    def closeEvent(self,e):
+        self.worker.stop()
+        self.queue.put(None)
+        self.worker.wait()
+        e.accept()
+        app.exit()
+
+
+
 if __name__ == "__main__":
-    condition = threading.Condition()
-    worker = SoundWorker(condition)
-    worker.start()
+    app = QtGui.QApplication(sys.argv)
+    qb = TerminalViewer()
+    qb.show()
+    sys.exit(app.exec_())
     
 
-    x = SoundMgr()
-    x.add('anvil', '/usr/lib/openoffice/basis3.2/share/gallery/sounds/ANVIL.WAV')
-    x.play('anvil')
-    x.play('anvil')
-    
-    s = mixer.Sound('/usr/lib/openoffice/basis3.2/share/gallery/sounds/ANVIL.WAV')
-    
-    condition.acquire()
-    worker.play(s)
-    condition.notify()
-    condition.release()
 
-    condition.acquire()
-    worker.stop()
-    condition.notify()
-    condition.release()
+# if __name__ == "__main__":
+#     condition = threading.Condition()
+#     worker = SoundWorker(condition)
+#     worker.start()
     
-    SoundMgr.instance = None
+
+#     x = SoundMgr()
+#     x.add('anvil', '/usr/lib/openoffice/basis3.2/share/gallery/sounds/ANVIL.WAV')
+#     x.play('anvil')
+#     x.play('anvil')
+    
+#     s = mixer.Sound('/usr/lib/openoffice/basis3.2/share/gallery/sounds/ANVIL.WAV')
+    
+#     condition.acquire()
+#     worker.play(s)
+#     condition.notify()
+#     condition.release()
+
+#     condition.acquire()
+#     worker.stop()
+#     condition.notify()
+#     condition.release()
+    
+#     SoundMgr.instance = None
