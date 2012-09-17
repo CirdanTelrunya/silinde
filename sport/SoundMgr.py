@@ -3,6 +3,7 @@
 from PyQt4.QtCore import *
 from PyQt4 import QtGui
 from pygame import mixer
+from time import sleep
 import threading
 import sys
 
@@ -11,18 +12,28 @@ class SoundMgr(object):
         def __init__(self):
             self.sounds = {}
             mixer.init()
+            self._queue = SharedQueue()
+            self._worker = QSoundWorker(queue = self._queue)
+            self._worker.start()
+            
+        def getWorker(self):
+            return self._worker
+
         def __del__(self):
+            self._worker.stop()
+            self._queue.put(None)
+            self._worker.wait()
             mixer.quit()
             print "delete SoundMgr"
+
         def __str__(self):
             return str(self.sounds)
         def add(self, soundName, soundFile):
             self.sounds[soundName] = mixer.Sound(soundFile);
-        def play(self, soundName):
-            self.sounds[soundName].play()
-            while mixer.get_busy():
-                pass
-    
+
+        def play(self, soundName, startTime = 0):
+            item = SoundItem(self.sounds[soundName], startTime)
+            self._queue.put(item);    
     instance = None
     
     def __new__(self):
@@ -36,32 +47,11 @@ class SoundMgr(object):
     def __setattr__(self, attr, val):
         return setattr(self.instance, attr, val)
 
-class SoundWorker(threading.Thread):
-    def __init__(self, condition, group=None, target=None, name=None, args=(), kwargs={}):
-        super(SoundWorker, self).__init__(group, target, name, args, kwargs)
-        self._continue = True
-        self._condition = condition
-        self._sound = None
-
-    def stop(self):
-        self._continue = False
-
-    def play(self, sound):
-        self._sound = sound
-
-    def run(self):
-        self._condition.acquire()
-        while True:
-            self._condition.wait()
-            self._sound.play()
-            while mixer.get_busy():
-                pass
-            print "OK !"
-            if not self._continue:
-                break            
-        self._condition.release()
-        pass
-        
+class SoundItem(object):
+    def __init__(self, sound, startTime = 0):
+        assert isinstance(sound, mixer.Sound)
+        self.sound = sound
+        self.startTime = startTime
 
 class QSoundWorker(QThread):
     def __init__(self, parent = None, queue = None):
@@ -80,11 +70,12 @@ class QSoundWorker(QThread):
         while self._continue:
             item = self._queue.get()
             if item is not None:
-                assert isinstance(item, mixer.Sound)
-                item.play()
+                assert isinstance(item, SoundItem)
+                sleep(item.startTime)
+                item.sound.play()
                 while mixer.get_busy():
                     pass
-                self.emit(SIGNAL("soundFinished( QString )"), QString("Finish"))
+                self.emit(SIGNAL("soundFinished()"))
         pass
 
 class SharedQueue(object):
@@ -121,26 +112,22 @@ class TerminalViewer(QtGui.QWidget):
         QtGui.QWidget.__init__(self,parent)
         # self.Label = QtGui.QLabel("Waiting for Something",self)
         self.button = QtGui.QPushButton("OK", self)
-        self.queue = SharedQueue()
         self.connect(self.button,SIGNAL("clicked ( ) "), self.Activated)
-        self.worker = QSoundWorker(self, self.queue)
-        self.connect(self.worker,SIGNAL("soundFinished( QString )"), self.receipt)
-        self.worker.start()
-        mixer.init()
+        x = SoundMgr()
+        x.add('kling', '/usr/lib/libreoffice/basis3.3/share/gallery/sounds/kling.wav')
+        self.connect(x.getWorker(), SIGNAL("soundFinished()"), self.receipt)
         
     def Activated(self):
         print "OK"
-        self.queue.put(mixer.Sound("/usr/lib/libreoffice/basis3.3/share/gallery/sounds/kling.wav"));
-        
+        SoundMgr().play('kling')
+                
     def closeEvent(self,e):
-        self.worker.stop()
-        self.queue.put(None)
-        self.worker.wait()
+        SoundMgr.instance = None
         e.accept()
         app.exit()
 
-    def receipt(self, string):
-        print str(string)
+    def receipt(self):
+        print "Sound OK"
 
 
 if __name__ == "__main__":
