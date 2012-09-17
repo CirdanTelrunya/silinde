@@ -84,6 +84,7 @@ class QSoundWorker(QThread):
                 item.play()
                 while mixer.get_busy():
                     pass
+                self.emit(SIGNAL("soundFinished( QString )"), QString("Finish"))
         pass
 
 class SharedQueue(object):
@@ -123,6 +124,7 @@ class TerminalViewer(QtGui.QWidget):
         self.queue = SharedQueue()
         self.connect(self.button,SIGNAL("clicked ( ) "), self.Activated)
         self.worker = QSoundWorker(self, self.queue)
+        self.connect(self.worker,SIGNAL("soundFinished( QString )"), self.receipt)
         self.worker.start()
         mixer.init()
         
@@ -137,6 +139,8 @@ class TerminalViewer(QtGui.QWidget):
         e.accept()
         app.exit()
 
+    def receipt(self, string):
+        print str(string)
 
 
 if __name__ == "__main__":
