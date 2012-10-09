@@ -33,7 +33,14 @@ class SoundMgr(object):
 
         def play(self, soundName, startTime = 0):
             item = SoundItem(self.sounds[soundName], startTime)
-            self._queue.put(item);    
+            self._queue.put(item);
+
+        def getList(self):
+            sounds = QStringList()
+            for sound in self.sounds:
+                sounds << QString(sound)
+            return sounds
+
     instance = None
     
     def __new__(self):

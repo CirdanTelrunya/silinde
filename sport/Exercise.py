@@ -56,6 +56,8 @@ class ExerciseView(QDialog):
             self.ui.sbxDuration.setValue(self._exercise.duration())
         if self._exercise.sound() is not None:
             self.ui.cbxSound.addItem(self._exercise.sound())
+        completer = QCompleter(SoundMgr().getList())
+        self.ui.cbxSound.setCompleter(completer)
         
     def accept(self):
         self._exercise.setName(str(self.ui.ldtName.text()))
