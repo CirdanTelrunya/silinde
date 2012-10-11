@@ -35,11 +35,8 @@ class SoundMgr(object):
             item = SoundItem(self.sounds[soundName], startTime)
             self._queue.put(item);
 
-        def getList(self):
-            sounds = QStringList()
-            for sound in self.sounds:
-                sounds << QString(sound)
-            return sounds
+        def getList(self):            
+            return self.sounds.keys()
 
     instance = None
     

@@ -1,2 +1,3 @@
 FORMS += Training.ui \
-    ExerciseView.ui
+    Series.ui \
+    Exercise.ui

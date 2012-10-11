@@ -7,6 +7,7 @@ from treenode.TreeNodeItemModel import TreeNodeItemModel
 from SportBase import SportBase
 from TrainingUi import Ui_TrainingView
 from Exercise import *
+from Series import *
 from SoundMgr import SoundMgr
 
 class TrainingNode(SportBase):
@@ -65,6 +66,9 @@ class TrainingCtl(QObject):
         action = QAction("New exercise...", self)
         QObject.connect(action, SIGNAL("triggered()"), self.__newExercise)
         self._actions.append(action)
+        action = QAction("New series...", self)
+        QObject.connect(action, SIGNAL("triggered()"), self.__newSeries)
+        self._actions.append(action)
         action = QAction("separator", self)
         action.setSeparator(True)
         self._actions.append(action)
@@ -81,6 +85,14 @@ class TrainingCtl(QObject):
             newExercise = dlg.getExerciseNode()
             self._model.insertNode(self._index, newExercise)
         pass
+
+    def __newSeries(self):
+        dlg = SeriesView(self.parent())
+        if dlg.exec_():
+            newSeries = dlg.getSeriesNode()
+            self._model.insertNode(self._index, newSeries)
+        pass
+
     
     def __editTraining(self):
         dlg = TrainingView(self.parent(), self._training)
@@ -115,7 +127,10 @@ class TrainingTree(QTreeView):
             ctl = TrainingCtl(self, self.model(), indices[0])
             ctl.populateMenu(menu)
         elif node.type() == "ExerciseNode":
-            ctl = ExerciseCtl(self, self.model(), indices[0])
+            ctl = ExerciseCtl(self, indices[0])
+            ctl.populateMenu(menu)
+        elif node.type() == "SeriesNode":
+            ctl = SeriesCtl(self, indices[0])
             ctl.populateMenu(menu)
         menu.popup(self.mapToGlobal(point))
         pass
@@ -137,3 +152,4 @@ if __name__ == '__main__':
     layout.addWidget(tv)
     dialog.exec_()
     app.closeAllWindows()
+    SoundMgr.instance = None

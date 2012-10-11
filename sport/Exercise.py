@@ -5,7 +5,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from treenode.TreeNodeItemModel import TreeNodeItemModel
 from SportBase import SportBase
-from ExerciseUi import Ui_ExerciseView
+from ExerciseUi import Ui_Exercise
 from SoundMgr import SoundMgr
 
 class ExerciseNode(SportBase):
@@ -45,19 +45,22 @@ class ExerciseNode(SportBase):
 class ExerciseView(QDialog):
     def __init__(self, parent=None, exercise=None):
         super(ExerciseView, self).__init__(parent)
-        self.ui = Ui_ExerciseView()
+        self.ui = Ui_Exercise()
         self.ui.setupUi(self)
         if exercise is None:
             self._exercise = ExerciseNode("exercise")
         else:
             self._exercise = exercise
         self.ui.ldtName.setText(self._exercise.name())
-        if isinstance(self._exercise.duration(), float):
-            self.ui.sbxDuration.setValue(self._exercise.duration())
+        if isinstance(self._exercise.duration(), (int, float)):
+            self.ui.sbxDuration.setValue(self._exercise.duration())        
+        sounds = SoundMgr().getList()
+        for sound in sounds:
+             self.ui.cbxSound.addItem(QString(sound))
         if self._exercise.sound() is not None:
-            self.ui.cbxSound.addItem(self._exercise.sound())
-        completer = QCompleter(SoundMgr().getList())
-        self.ui.cbxSound.setCompleter(completer)
+            index = self.ui.cbxSound.findText(QString(self._exercise.sound()))
+            if index != -1:
+                self.ui.cbxSound.setCurrentIndex(index)
         
     def accept(self):
         self._exercise.setName(str(self.ui.ldtName.text()))
@@ -70,13 +73,11 @@ class ExerciseView(QDialog):
         return self._exercise
 
 class ExerciseCtl(QObject):
-    def __init__ (self, parent = None, model = None, index = None):
+    def __init__ (self, parent = None, index = None):
         super(ExerciseCtl, self).__init__(parent)
         assert isinstance(index, QModelIndex)
-        assert isinstance(model, TreeNodeItemModel)
         self._exercise = index.internalPointer()
         assert isinstance(self._exercise, ExerciseNode)
-        self._model = model
         self._index = index
         self.__initActions()
 
