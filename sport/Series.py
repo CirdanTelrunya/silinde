@@ -47,7 +47,10 @@ class SeriesNode(SportBase):
         self._sound = sound
 
     def play(self):        
-        print self._name+" not implemented"
+        print self._name
+        if self._sound != None:
+            for i in range(self._repetition):
+                SoundMgr().play(self._sound, self._duration)
 
 class SeriesView(QDialog):
     def __init__(self, parent=None, series=None):
@@ -82,21 +85,22 @@ class SeriesView(QDialog):
         return self._series
 
 class SeriesCtl(QObject):
-    def __init__ (self, parent = None, index = None):
-        super(SeriesCtl, self).__init__(parent)
-        assert isinstance(index, QModelIndex)
-        self._series = index.internalPointer()
-        assert isinstance(self._series, SeriesNode)
-        self._index = index
+    def __init__ (self, parent = None):
+        super(SeriesCtl, self).__init__(parent)        
         self.__initActions()
 
+    def node(self):
+        return self._series
+    
+    def setNode(self, series):
+        assert isinstance(series, SeriesNode)
+        self._series = series
+
+    def __del__(self):
+        print "__del__SeriesCtl"
+
     def __initActions(self):
-        self._actions = []
-        action = QAction("[series] "+str(self._series.name()), self)
-        font = QFont()
-        font.setBold(True)
-        action.setFont(font)
-        self._actions.append(action)
+        self._actions = []        
         action = QAction("separator", self)
         action.setSeparator(True)
         self._actions.append(action)
@@ -108,14 +112,28 @@ class SeriesCtl(QObject):
         self._actions.append(action)
     
     def populateMenu(self, menu):
-        assert isinstance( menu, QMenu)        
+        assert isinstance(menu, QMenu)        
         menu.addSeparator()
+        action = QAction("[series] "+str(self._series.name()), self)
+        font = QFont()
+        font.setBold(True)
+        action.setFont(font)
         for item in self._actions:
             menu.addAction(item)
 
-    def __editSeries(self):
+    def __editSeries(self):        
         dlg = SeriesView(self.parent(), self._series)
         dlg.exec_()
 
     def __playSeries(self):
+        assert isinstance(self._series, SeriesNode)
+        self.connect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), self.__receipt)
+        self.__cpt = 1
         self._series.play()
+
+    def __receipt(self):
+        if(self.__cpt == self._series.repetition()):
+            print "OK"
+            self.disconnect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), self.__receipt)
+        else:
+            self.__cpt += 1

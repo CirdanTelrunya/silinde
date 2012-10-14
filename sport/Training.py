@@ -43,23 +43,32 @@ class TrainingView(QDialog):
         QDialog.accept(self)
 
 class TrainingCtl(QObject):
-    def __init__ (self, parent = None, model = None, index = None):
+    def __init__ (self, parent = None, index = None):
         super(TrainingCtl, self).__init__(parent)
-        assert isinstance(index, QModelIndex)
-        assert isinstance(model, TreeNodeItemModel)
-        self._training = index.internalPointer()
-        assert isinstance(self._training, TrainingNode)
-        self._model = model
-        self._index = index
         self.__initActions()
 
+    def node(self):
+        return self._training
+
+    def setNode(self, training):
+        assert isinstance(training, TrainingNode)
+        self._training = training
+
+    def model(self):
+        return self._model
+    def setModel(self, model):
+        assert isinstance(model, TreeNodeItemModel)
+        self._model = model
+    def index(self):
+        return self._index
+    def setIndex(self, index):
+        assert isinstance(index, QModelIndex)
+        assert self._training == index.internalPointer()
+        self._index = index
+
+
     def __initActions(self):
-        self._actions = []
-        action = QAction("[training] "+str(self._training.name()), self)
-        font = QFont()
-        font.setBold(True)
-        action.setFont(font)
-        self._actions.append(action)
+        self._actions = []        
         action = QAction("separator", self)
         action.setSeparator(True)
         self._actions.append(action)
@@ -102,8 +111,13 @@ class TrainingCtl(QObject):
         pass
 
     def populateMenu(self, menu):
-        assert isinstance( menu, QMenu)        
+        assert isinstance(menu, QMenu)        
         menu.addSeparator()
+        action = QAction("[training] "+str(self._training.name()), self)
+        font = QFont()
+        font.setBold(True)
+        action.setFont(font)
+        menu.addAction(action)
         for item in self._actions:
             menu.addAction(item)
 
@@ -116,32 +130,35 @@ class TrainingTree(QTreeView):
         self.setDragDropMode(QAbstractItemView.InternalMove) 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         QObject.connect(self, SIGNAL('customContextMenuRequested(QPoint)'), self.ctxMenu)
-        
+        self._controlers = dict()
+        self._controlers["TrainingNode"] = TrainingCtl(self)
+        self._controlers["ExerciseNode"] = ExerciseCtl(self)
+        self._controlers["SeriesNode"] = SeriesCtl(self)
 
     def ctxMenu(self, point):
         indices = self.selectedIndexes()
         assert len(indices) == 1
         node = indices[0].internalPointer()
+        print node.type()
         menu = QMenu(self)
+        ctl = self._controlers[node.type()]        
+        ctl.setNode(node)
         if node.type() == "TrainingNode":
-            ctl = TrainingCtl(self, self.model(), indices[0])
-            ctl.populateMenu(menu)
-        elif node.type() == "ExerciseNode":
-            ctl = ExerciseCtl(self, indices[0])
-            ctl.populateMenu(menu)
-        elif node.type() == "SeriesNode":
-            ctl = SeriesCtl(self, indices[0])
-            ctl.populateMenu(menu)
-        menu.popup(self.mapToGlobal(point))
+            ctl.setModel(self.model())
+            ctl.setIndex(indices[0])
+        
+        ctl.populateMenu(menu)
+        menu.exec_(self.mapToGlobal(point))
+        menu.deleteLater()
         pass
 
 
 if __name__ == '__main__':
     app = QApplication([])
     soundMgr = SoundMgr()
-    # soundMgr.add('anvil', '/usr/lib/openoffice/basis3.2/share/gallery/sounds/ANVIL.WAV')
-    # soundMgr.add('kling', '/usr/lib/openoffice/basis3.2/share/gallery/sounds/kling.wav')
-    soundMgr.add('kling', '/usr/lib/libreoffice/basis3.3/share/gallery/sounds/kling.wav')
+    soundMgr.add('anvil', '/usr/lib/openoffice/basis3.2/share/gallery/sounds/ANVIL.WAV')
+    soundMgr.add('kling', '/usr/lib/openoffice/basis3.2/share/gallery/sounds/kling.wav')
+    # soundMgr.add('kling', '/usr/lib/libreoffice/basis3.3/share/gallery/sounds/kling.wav')
     root = TrainingNode('training')
     model = TreeNodeItemModel(root)
     dialog = QDialog()

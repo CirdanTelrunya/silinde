@@ -40,7 +40,7 @@ class ExerciseNode(SportBase):
     def play(self):
         print self._name
         if self._sound != None:
-            SoundMgr().play(self._sound)
+            SoundMgr().play(self._sound, self._duration)
 
 class ExerciseView(QDialog):
     def __init__(self, parent=None, exercise=None):
@@ -73,21 +73,18 @@ class ExerciseView(QDialog):
         return self._exercise
 
 class ExerciseCtl(QObject):
-    def __init__ (self, parent = None, index = None):
-        super(ExerciseCtl, self).__init__(parent)
-        assert isinstance(index, QModelIndex)
-        self._exercise = index.internalPointer()
-        assert isinstance(self._exercise, ExerciseNode)
-        self._index = index
+    def __init__ (self, parent = None):
+        super(ExerciseCtl, self).__init__(parent)        
         self.__initActions()
+
+    def node(self):
+        return self._exercise
+    def setNode(self, exercise):
+        assert isinstance(exercise, ExerciseNode)
+        self._exercise = exercise
 
     def __initActions(self):
         self._actions = []
-        action = QAction("[exercise] "+str(self._exercise.name()), self)
-        font = QFont()
-        font.setBold(True)
-        action.setFont(font)
-        self._actions.append(action)
         action = QAction("separator", self)
         action.setSeparator(True)
         self._actions.append(action)
@@ -101,6 +98,10 @@ class ExerciseCtl(QObject):
     def populateMenu(self, menu):
         assert isinstance( menu, QMenu)        
         menu.addSeparator()
+        action = QAction("[exercise] "+str(self._exercise.name()), self)
+        font = QFont()
+        font.setBold(True)
+        action.setFont(font)
         for item in self._actions:
             menu.addAction(item)
 
