@@ -1,3 +1,4 @@
 FORMS += Training.ui \
     Series.ui \
-    Exercise.ui
+    Exercise.ui \
+    MainWindow.ui
