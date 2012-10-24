@@ -152,6 +152,10 @@ class TrainingTree(QTreeView):
         menu.deleteLater()
         pass
 
+    def getRootNode(self):
+        ret = self.model().root()
+        assert isinstance(ret, TrainingNode)
+        return ret
 
 if __name__ == '__main__':
     app = QApplication([])
