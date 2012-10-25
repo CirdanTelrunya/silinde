@@ -107,6 +107,12 @@ class SeriesCtl(QObject):
         action = QAction("Edit...", self)
         QObject.connect(action, SIGNAL("triggered()"), self.__editSeries)
         self._actions.append(action)
+        action = QAction("Delete", self)
+        QObject.connect(action, SIGNAL("triggered()"), self.__deleteSeries)
+        self._actions.append(action)
+        action = QAction("separator", self)
+        action.setSeparator(True)
+        self._actions.append(action)
         action = QAction("Play", self)
         QObject.connect(action, SIGNAL("triggered()"), self.__playSeries)
         self._actions.append(action)
@@ -118,6 +124,7 @@ class SeriesCtl(QObject):
         font = QFont()
         font.setBold(True)
         action.setFont(font)
+        menu.addAction(action)
         for item in self._actions:
             menu.addAction(item)
 
@@ -130,6 +137,9 @@ class SeriesCtl(QObject):
         self.connect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), self.__receipt)
         self.__cpt = 1
         self._series.play()
+
+    def __deleteSeries(self):
+        self._series.setIsDeleted(True)
 
     def __receipt(self):
         if(self.__cpt == self._series.repetition()):

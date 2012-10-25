@@ -134,24 +134,35 @@ class TrainingTree(QTreeView):
         self._controlers["TrainingNode"] = TrainingCtl(self)
         self._controlers["ExerciseNode"] = ExerciseCtl(self)
         self._controlers["SeriesNode"] = SeriesCtl(self)
+        self._deletedNode = None
 
     def ctxMenu(self, point):
         indices = self.selectedIndexes()
         assert len(indices) == 1
         node = indices[0].internalPointer()
-        print node.type()
         menu = QMenu(self)
-        ctl = self._controlers[node.type()]        
-        ctl.setNode(node)
-        if node.type() == "TrainingNode":
-            ctl.setModel(self.model())
-            ctl.setIndex(indices[0])
-        
-        ctl.populateMenu(menu)
+        if node.isDeleted():
+            action = QAction("Undelete", self)
+            QObject.connect(action, SIGNAL("triggered()"), self.__undelete)
+            self._deletedNode = node
+            menu.addAction(action)
+            pass
+        else:
+            ctl = self._controlers[node.type()]
+            ctl.setNode(node)
+            if node.type() == "TrainingNode":
+                ctl.setModel(self.model())
+                ctl.setIndex(indices[0])        
+            ctl.populateMenu(menu)
         menu.exec_(self.mapToGlobal(point))
         menu.deleteLater()
+
         pass
 
+    def __undelete(self):
+        print "undelete"
+        self._deletedNode.setIsDeleted(False)
+        pass
     def getRootNode(self):
         ret = self.model().root()
         assert isinstance(ret, TrainingNode)

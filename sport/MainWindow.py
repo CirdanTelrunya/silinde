@@ -23,7 +23,12 @@ class MainWindow(QMainWindow):
         QObject.connect(self.ui.actionLoad, SIGNAL("triggered()"), self.load)
         QObject.connect(self.ui.actionSave, SIGNAL("triggered()"), self.save)
         
-    def load(self):        
+    def load(self):
+        fileName = QFileDialog.getOpenFileName(self, "Open training", QString(), "Plk Files (*.plk);;All Files (*)")
+        input = open(fileName, 'rb')
+        root = pickle.load(input)
+        model = TreeNodeItemModel(root)
+        self.ui.treeView.setModel(model)
         print 'load'
 
     def save(self):

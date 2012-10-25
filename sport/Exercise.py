@@ -91,9 +91,17 @@ class ExerciseCtl(QObject):
         action = QAction("Edit...", self)
         QObject.connect(action, SIGNAL("triggered()"), self.__editExercise)
         self._actions.append(action)
+        action = QAction("Delete", self)
+        QObject.connect(action, SIGNAL("triggered()"), self.__deleteExercise)
+        self._actions.append(action)
+        action = QAction("separator", self)
+        action.setSeparator(True)
+        self._actions.append(action)
         action = QAction("Play", self)
         QObject.connect(action, SIGNAL("triggered()"), self.__playExercise)
         self._actions.append(action)
+        
+        
     
     def populateMenu(self, menu):
         assert isinstance( menu, QMenu)        
@@ -102,6 +110,7 @@ class ExerciseCtl(QObject):
         font = QFont()
         font.setBold(True)
         action.setFont(font)
+        menu.addAction(action)
         for item in self._actions:
             menu.addAction(item)
 
@@ -111,3 +120,6 @@ class ExerciseCtl(QObject):
 
     def __playExercise(self):
         self._exercise.play()
+
+    def __deleteExercise(self):        
+        self._exercise.setIsDeleted(True)
