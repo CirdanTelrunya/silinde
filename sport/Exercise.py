@@ -15,6 +15,8 @@ class ExerciseNode(SportBase):
         self._description = ""
         self._duration = None
         self._sound = None
+        self.setIcon(":/icons/exercise.png")
+        self.setDeletedIcon(":/icons/exercise_delete.png")
 
     def description(self):
         return self._description

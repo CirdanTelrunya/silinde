@@ -9,7 +9,7 @@ from Training import TrainingNode
 from treenode.TreeNodeItemModel import TreeNodeItemModel
 from SoundMgr import SoundMgr
 import pickle
-
+import icons
 
 class MainWindow(QMainWindow):
     def __init__ (self, parent = None, flags = 0):

@@ -16,6 +16,8 @@ class SeriesNode(SportBase):
         self._repetition = None
         self._duration = None
         self._sound = None
+        self.setIcon(":/icons/series.png")
+        self.setDeletedIcon(":/icons/series_delete.png")
 
     def description(self):
         return self._description

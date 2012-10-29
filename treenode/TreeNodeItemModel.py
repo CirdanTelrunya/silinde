@@ -20,6 +20,11 @@ class TreeNodeItemModel(QtCore.QAbstractItemModel):
 	# end if
     # end def __init__
 
+    def root(self):
+        assert isinstance(self._rootNode, TreeNode)
+        assert self._rootNode.childCount() == 1
+        return self._rootNode.child(0)
+
     def index(
         self,
         row,
@@ -89,6 +94,11 @@ class TreeNodeItemModel(QtCore.QAbstractItemModel):
 
 	# end if
     # end def data
+
+    def headerData(self, section, orientation, role):
+        if orientation == QtCore.Qt.Horizontal and role == QtCore.Qt.DisplayRole:
+            return QtCore.QVariant(QtCore.QString("tree"))
+        return None 
 
     def insertNode(self, parent, node, row = None):
         if not parent.isValid():

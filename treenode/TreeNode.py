@@ -21,7 +21,7 @@ class TreeNode(object):
 
     def __str__(self):
         assert isinstance(self._name, (str, unicode))
-        return _name
+        return self._name
     # end def __str__
 
     def insertChild(self, node, row=None):
