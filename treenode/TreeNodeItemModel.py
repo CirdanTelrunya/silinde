@@ -89,9 +89,14 @@ class TreeNodeItemModel(QtCore.QAbstractItemModel):
             return str(node.name())
         elif role == QtCore.Qt.DecorationRole:
             if node.icon() is not None:
-                # TODO
                 return QtGui.QIcon(node.icon())
-
+        elif role == QtCore.Qt.FontRole:
+            if(node.isDeleted()):
+                font = QtGui.QFont()
+                font.setStrikeOut(True)
+                return font
+        elif role == QtCore.Qt.SizeHintRole:
+            return QtCore.QSize(32, 32)
 	# end if
     # end def data
 

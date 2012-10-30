@@ -135,6 +135,7 @@ class TrainingTree(QTreeView):
         self._controlers["ExerciseNode"] = ExerciseCtl(self)
         self._controlers["SeriesNode"] = SeriesCtl(self)
         self._deletedNode = None
+        self.setIconSize(QSize(32,32))
 
     def ctxMenu(self, point):
         indices = self.selectedIndexes()
