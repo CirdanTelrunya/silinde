@@ -6,11 +6,13 @@ from pygame import mixer
 from time import sleep
 import threading
 import sys
+import pickle
 
 class SoundMgr(object):
     class __SoundMgr():
         def __init__(self):
-            self.sounds = {}
+            self._sounds = {}
+            self._soundsFiles = {}
             mixer.init()
             self._queue = SharedQueue()
             self._worker = QSoundWorker(queue = self._queue)
@@ -27,17 +29,28 @@ class SoundMgr(object):
             print "delete SoundMgr"
 
         def __str__(self):
-            return str(self.sounds)
+            return str(self._sounds)
+        
         def add(self, soundName, soundFile):
-            self.sounds[soundName] = mixer.Sound(soundFile);
+            self._sounds[soundName] = mixer.Sound(soundFile)
+            self._soundsFiles[soundName] = soundFile
 
         def play(self, soundName, startTime = 0):
-            item = SoundItem(self.sounds[soundName], startTime)
+            item = SoundItem(self._sounds[soundName], startTime)
             self._queue.put(item);
 
         def getList(self):            
-            return self.sounds.keys()
+            return self._sounds.keys()
 
+        def save(self, filename):
+            pickle.dump(self._soundsFiles, open(filename, 'wb'))
+        
+        def load(self, filename):
+            self._soundsFiles = pickle.load(open(filename, 'rb'))
+            self._sounds.clear()
+            for soundName, soundFile in self._soundsFiles.items():
+                self._sounds[soundName] = mixer.Sound(soundFile)
+        
     instance = None
     
     def __new__(self):
@@ -134,13 +147,18 @@ class TerminalViewer(QtGui.QWidget):
         print "Sound OK"
 
 
+# if __name__ == "__main__":
+#     app = QtGui.QApplication(sys.argv)
+#     qb = TerminalViewer()
+#     qb.show()
+#     sys.exit(app.exec_())
+  
 if __name__ == "__main__":
-    app = QtGui.QApplication(sys.argv)
-    qb = TerminalViewer()
-    qb.show()
-    sys.exit(app.exec_())
-    
-
+    #SoundMgr().add('kling', '/usr/lib/openoffice/basis3.2/share/gallery/sounds/kling.wav')
+    #SoundMgr().save('toto.plk')
+    SoundMgr().load('toto.plk')
+    SoundMgr().play('kling')
+    SoundMgr.instance = None
 
 # if __name__ == "__main__":
 #     condition = threading.Condition()

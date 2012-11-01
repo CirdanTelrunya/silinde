@@ -1,7 +1,6 @@
 FORMS += Training.ui \
     Series.ui \
     Exercise.ui \
-    MainWindow.ui
-
-RESOURCES += \
-    icons.qrc
+    MainWindow.ui \
+    SoundMgr.ui
+RESOURCES += icons.qrc
