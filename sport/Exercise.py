@@ -100,11 +100,9 @@ class ExerciseCtl(QObject):
         action.setSeparator(True)
         self._actions.append(action)
         action = QAction("Play", self)
-        QObject.connect(action, SIGNAL("triggered()"), self.__playExercise)
+        QObject.connect(action, SIGNAL("triggered()"), self.play)
         self._actions.append(action)
-        
-        
-    
+            
     def populateMenu(self, menu):
         assert isinstance( menu, QMenu)        
         menu.addSeparator()
@@ -120,7 +118,8 @@ class ExerciseCtl(QObject):
         dlg = ExerciseView(self.parent(), self._exercise)
         dlg.exec_()
 
-    def __playExercise(self):
+    def play(self):
+        self.connect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), SIGNAL("finished()"))
         self._exercise.play()
 
     def __deleteExercise(self):        

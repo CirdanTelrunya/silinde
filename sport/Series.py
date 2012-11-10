@@ -116,7 +116,7 @@ class SeriesCtl(QObject):
         action.setSeparator(True)
         self._actions.append(action)
         action = QAction("Play", self)
-        QObject.connect(action, SIGNAL("triggered()"), self.__playSeries)
+        QObject.connect(action, SIGNAL("triggered()"), self.play)
         self._actions.append(action)
     
     def populateMenu(self, menu):
@@ -130,15 +130,15 @@ class SeriesCtl(QObject):
         for item in self._actions:
             menu.addAction(item)
 
-    def __editSeries(self):        
-        dlg = SeriesView(self.parent(), self._series)
-        dlg.exec_()
-
-    def __playSeries(self):
+    def play(self):
         assert isinstance(self._series, SeriesNode)
         self.connect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), self.__receipt)
         self.__cpt = 1
         self._series.play()
+
+    def __editSeries(self):        
+        dlg = SeriesView(self.parent(), self._series)
+        dlg.exec_()
 
     def __deleteSeries(self):
         self._series.setIsDeleted(True)
@@ -147,5 +147,6 @@ class SeriesCtl(QObject):
         if(self.__cpt == self._series.repetition()):
             print "OK"
             self.disconnect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), self.__receipt)
+            self.emit(SIGNAL("finished()"))
         else:
             self.__cpt += 1

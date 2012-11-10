@@ -46,6 +46,8 @@ class TrainingCtl(QObject):
     def __init__ (self, parent = None, index = None):
         super(TrainingCtl, self).__init__(parent)
         self.__initActions()
+        self._current = None
+        self._ctl = None
 
     def node(self):
         return self._training
@@ -87,6 +89,12 @@ class TrainingCtl(QObject):
         action = QAction("Delete", self)
         QObject.connect(action, SIGNAL("triggered()"), self.__deleteTraining)
         self._actions.append(action)
+        action = QAction("separator", self)
+        action.setSeparator(True)
+        self._actions.append(action)
+        action = QAction("Play", self)
+        QObject.connect(action, SIGNAL("triggered()"), self.__playTraining)
+        self._actions.append(action)
 
     def __newExercise(self):
         dlg = ExerciseView(self.parent())
@@ -109,6 +117,34 @@ class TrainingCtl(QObject):
         pass
     def __deleteTraining(self):
         pass
+
+    def __playTraining(self):
+        assert isinstance(self._training, TrainingNode)
+        assert self._ctl == None
+        print "play"
+        if self._current == None:
+            self._current = self._training.child(0)
+        else:
+            self._current = self._current.nextSibling()
+        node = self._current
+        if node != None:
+            print str(node)
+            if node.type() == "ExerciseNode":
+                self._ctl = ExerciseCtl(self)
+            elif node.type() == "SeriesNode":
+                self._ctl = SeriesCtl(self)
+            self._ctl.setNode(node)
+            QObject.connect(self._ctl, SIGNAL('finished()'), self.__nextPlay)
+            self._ctl.play()
+
+    def __nextPlay(self):
+        assert self._ctl != None
+        print "nextPlay"
+        QObject.disconnect(self._ctl, SIGNAL('finished()'), self.__nextPlay)
+        self._ctl = None # disconnect
+        self.__playTraining()
+        
+        
 
     def populateMenu(self, menu):
         assert isinstance(menu, QMenu)        

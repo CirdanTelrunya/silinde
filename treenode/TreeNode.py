@@ -78,6 +78,9 @@ class TreeNode(object):
     # end def setParent
 
     def child(self, row):
+        if(len(self._children) == 0):
+            return None
+        assert (row < len(self._children))
         return self._children[row]
     # end def child
 
@@ -96,6 +99,26 @@ class TreeNode(object):
         return 0
     # end def row
 
+    def nextSibling(self):
+        if self._parent:
+            row = self.row() + 1
+            if row < len(self._parent._children):
+                return self._parent._children[row]
+            else:
+                return None
+        else:
+            return None
+
+    def previousSibling(self):
+        if self._parent:
+            row = self.row() - 1
+            if row < 0:
+                return self._parent._children[row]
+            else:
+                return None
+        else:
+            return None        
+    
     def canBeInserted(self, node):
         if isinstance(node, TreeNode):
             return True
