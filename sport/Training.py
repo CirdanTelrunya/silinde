@@ -8,6 +8,7 @@ from SportBase import SportBase
 from TrainingUi import Ui_TrainingView
 from Exercise import *
 from Series import *
+from Sequence import *
 from SoundMgr import SoundMgr
 
 class TrainingNode(SportBase):
@@ -80,6 +81,9 @@ class TrainingCtl(QObject):
         action = QAction("New series...", self)
         QObject.connect(action, SIGNAL("triggered()"), self.__newSeries)
         self._actions.append(action)
+        action = QAction("New sequence...", self)
+        QObject.connect(action, SIGNAL("triggered()"), self.__newSequence)
+        self._actions.append(action)
         action = QAction("separator", self)
         action.setSeparator(True)
         self._actions.append(action)
@@ -109,7 +113,12 @@ class TrainingCtl(QObject):
             newSeries = dlg.getSeriesNode()
             self._model.insertNode(self._index, newSeries)
         pass
-
+    def __newSequence(self):
+        dlg = SequenceView(self.parent())
+        if dlg.exec_():
+            newSequence = dlg.getSequenceNode()
+            self._model.insertNode(self._index, newSequence)
+        pass
     
     def __editTraining(self):
         dlg = TrainingView(self.parent(), self._training)
@@ -133,6 +142,8 @@ class TrainingCtl(QObject):
                 self._ctl = ExerciseCtl(self)
             elif node.type() == "SeriesNode":
                 self._ctl = SeriesCtl(self)
+            elif node.type() == "SequenceNode":
+                self._ctl = SequenceCtl(self)
             self._ctl.setNode(node)
             QObject.connect(self._ctl, SIGNAL('finished()'), self.__nextPlay)
             self._ctl.play()
@@ -170,6 +181,7 @@ class TrainingTree(QTreeView):
         self._controlers["TrainingNode"] = TrainingCtl(self)
         self._controlers["ExerciseNode"] = ExerciseCtl(self)
         self._controlers["SeriesNode"] = SeriesCtl(self)
+        self._controlers["SequenceNode"] = SequenceCtl(self)
         self._deletedNode = None
         self.setIconSize(QSize(32,32))
 
@@ -187,7 +199,7 @@ class TrainingTree(QTreeView):
         else:
             ctl = self._controlers[node.type()]
             ctl.setNode(node)
-            if node.type() == "TrainingNode":
+            if node.type() == "TrainingNode" or node.type() == "SequenceNode":
                 ctl.setModel(self.model())
                 ctl.setIndex(indices[0])        
             ctl.populateMenu(menu)

@@ -43,6 +43,8 @@ if __name__ == '__main__':
     soundMgr = SoundMgr()
     # soundMgr.add('kling', '/usr/lib/libreoffice/basis3.3/share/gallery/sounds/kling.wav')
     soundMgr.add('kling', '/usr/lib/openoffice/basis3.2/share/gallery/sounds/kling.wav')
+    soundMgr.add('anvil', '/usr/lib/openoffice/basis3.2/share/gallery/sounds/ANVIL.WAV')
+    
     main = MainWindow()
     main.show()
     app.exec_()
