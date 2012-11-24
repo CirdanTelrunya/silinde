@@ -10,6 +10,7 @@ from Exercise import *
 from Series import *
 from Sequence import *
 from SoundMgr import SoundMgr
+from Logger import Logger
 
 class TrainingNode(SportBase):
     """ un commentaire"""
@@ -49,6 +50,7 @@ class TrainingCtl(QObject):
         self.__initActions()
         self._current = None
         self._ctl = None
+        self._logger = Logger()
 
     def node(self):
         return self._training
@@ -147,10 +149,15 @@ class TrainingCtl(QObject):
             self._ctl.setNode(node)
             QObject.connect(self._ctl, SIGNAL('finished()'), self.__nextPlay)
             self._ctl.play()
+        else:
+            if self._logger is not None:
+                self._logger.save('/tmp/save.csv')
 
     def __nextPlay(self):
         assert self._ctl != None
         print "nextPlay"
+        if self._logger is not None:
+            self._ctl.log(self._logger)
         QObject.disconnect(self._ctl, SIGNAL('finished()'), self.__nextPlay)
         self._ctl = None # disconnect
         self.__playTraining()

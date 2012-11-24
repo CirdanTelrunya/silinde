@@ -7,6 +7,7 @@ from treenode.TreeNodeItemModel import TreeNodeItemModel
 from SportBase import SportBase
 from SeriesUi import Ui_Series
 from SoundMgr import SoundMgr
+from Logger import Logger
 
 class SeriesNode(SportBase):
     """ un commentaire"""
@@ -53,6 +54,11 @@ class SeriesNode(SportBase):
         if self._sound != None:
             for i in range(self._repetition):
                 SoundMgr().play(self._sound, self._duration)
+
+    def log(self, logger):
+        assert isinstance(logger, Logger)
+        logger.log(self._name, self._repetition)
+        pass
 
 class SeriesView(QDialog):
     def __init__(self, parent=None, series=None):
@@ -135,6 +141,11 @@ class SeriesCtl(QObject):
         self.connect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), self.__receipt)
         self.__cpt = 1
         self._series.play()
+
+    def log(self, logger):        
+        assert isinstance(self._series, SeriesNode)
+        self._series.log(logger)
+        pass
 
     def __editSeries(self):        
         dlg = SeriesView(self.parent(), self._series)

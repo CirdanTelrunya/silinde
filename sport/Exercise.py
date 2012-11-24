@@ -7,6 +7,7 @@ from treenode.TreeNodeItemModel import TreeNodeItemModel
 from SportBase import SportBase
 from ExerciseUi import Ui_Exercise
 from SoundMgr import SoundMgr
+from Logger import Logger
 
 class ExerciseNode(SportBase):
     """ un commentaire"""
@@ -43,6 +44,10 @@ class ExerciseNode(SportBase):
         print self._name
         if self._sound != None:
             SoundMgr().play(self._sound, self._duration)
+    def log(self, logger):
+        assert isinstance(logger, Logger)
+        logger.log(self._name, self._duration)
+        pass
 
 class ExerciseView(QDialog):
     def __init__(self, parent=None, exercise=None):
@@ -114,13 +119,19 @@ class ExerciseCtl(QObject):
         for item in self._actions:
             menu.addAction(item)
 
+    def play(self):
+        self.connect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), SIGNAL("finished()"))
+        self._exercise.play()
+
+    def log(self, logger):        
+        assert isinstance(self._exercise, ExerciseNode)
+        self._exercise.log(logger)
+        pass
+
     def __editExercise(self):
         dlg = ExerciseView(self.parent(), self._exercise)
         dlg.exec_()
 
-    def play(self):
-        self.connect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), SIGNAL("finished()"))
-        self._exercise.play()
 
     def __deleteExercise(self):        
         self._exercise.setIsDeleted(True)

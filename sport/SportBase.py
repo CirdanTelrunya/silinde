@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from treenode.TreeNode import TreeNode
+from Logger import Logger
 
 class SportBase(TreeNode):
     def __init__(self, name='', parent=None):
@@ -36,3 +37,5 @@ class SportBase(TreeNode):
         else:
             return super(SportBase, self).icon()
 
+    def log(self, logger):
+        pass

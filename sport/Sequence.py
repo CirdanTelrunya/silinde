@@ -6,9 +6,9 @@ from PyQt4.QtGui import *
 from treenode.TreeNodeItemModel import TreeNodeItemModel
 from SportBase import SportBase
 from SequenceUi import Ui_Sequence
-from SoundMgr import SoundMgr
 from Exercise import *
 from Series import *
+from Logger import Logger
 
 class SequenceNode(SportBase):
     """ un commentaire"""
@@ -30,11 +30,13 @@ class SequenceNode(SportBase):
     def setRepetition(self, repetition):
         assert isinstance(repetition, int)
         self._repetition = repetition
-
-    def play(self):
-        print self._name
-        if self._sound != None:
-            SoundMgr().play(self._sound, self._duration)
+        
+    def log(self, logger):
+        assert isinstance(logger, Logger)
+        logger.log(self._name, self._repetition)
+        for child in self.children():
+            child.log(logger)
+        pass
 
 class SequenceView(QDialog):
     def __init__(self, parent=None, sequence=None):
@@ -148,6 +150,10 @@ class SequenceCtl(QObject):
     def __editSequence(self):
         dlg = SequenceView(self.parent(), self._sequence)
         dlg.exec_()
+
+    def log(self, logger):
+        assert isinstance(self._sequence, SequenceNode)
+        self._sequence.log(logger)
 
     def play(self):
         if(self._cpt < self._sequence.repetition()):
