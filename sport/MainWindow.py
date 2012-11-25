@@ -6,6 +6,7 @@ from PyQt4.QtGui import *
 from MainWindowUi import Ui_MainWindow
 import sys
 from Training import TrainingNode
+from SportBase import SportBase
 from treenode.TreeNodeItemModel import TreeNodeItemModel
 from SoundMgr import SoundMgr
 import pickle
@@ -22,7 +23,8 @@ class MainWindow(QMainWindow):
         tv.setModel(model)
         QObject.connect(self.ui.actionLoad, SIGNAL("triggered()"), self.load)
         QObject.connect(self.ui.actionSave, SIGNAL("triggered()"), self.save)
-        
+        QObject.connect(tv, SIGNAL("clicked(QModelIndex)"), self._rowClicked)
+
     def load(self):
         fileName = QFileDialog.getOpenFileName(self, "Open training", QString(), "Plk Files (*.plk);;All Files (*)")
         input = open(fileName, 'rb')
@@ -38,6 +40,12 @@ class MainWindow(QMainWindow):
         pickle.dump(root, output)
         print 'save'
         
+    def _rowClicked(self, index):
+        node = index.internalPointer()
+        assert isinstance(node, SportBase)
+        self.ui.tdtDescription.setPlainText(QString(node.description()))
+        pass
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     soundMgr = SoundMgr()

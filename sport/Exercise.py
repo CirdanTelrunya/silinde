@@ -13,18 +13,10 @@ class ExerciseNode(SportBase):
     """ un commentaire"""
     def __init__(self, name='', parent=None):
         super(ExerciseNode, self).__init__(name, parent)
-        self._description = ""
         self._duration = None
         self._sound = None
         self.setIcon(":/icons/exercise.png")
         self.setDeletedIcon(":/icons/exercise_delete.png")
-
-    def description(self):
-        return self._description
-
-    def setDescription(self, description):
-        assert isinstance(description, (str, unicode))
-        self._description = description
 
     def duration(self):
         return self._duration
@@ -59,8 +51,9 @@ class ExerciseView(QDialog):
         else:
             self._exercise = exercise
         self.ui.ldtName.setText(self._exercise.name())
+        self.ui.tdtDescription.setPlainText(self._exercise.description())
         if isinstance(self._exercise.duration(), (int, float)):
-            self.ui.sbxDuration.setValue(self._exercise.duration())        
+            self.ui.sbxDuration.setValue(self._exercise.duration())
         sounds = SoundMgr().getList()
         for sound in sounds:
              self.ui.cbxSound.addItem(QString(sound))
@@ -73,6 +66,7 @@ class ExerciseView(QDialog):
         self._exercise.setName(str(self.ui.ldtName.text()))
         self._exercise.setDuration(self.ui.sbxDuration.value())
         self._exercise.setSound(str(self.ui.cbxSound.currentText()))
+        self._exercise.setDescription(str(self.ui.tdtDescription.toPlainText()))
         QDialog.accept(self)
 
     def getExerciseNode(self):
@@ -119,9 +113,18 @@ class ExerciseCtl(QObject):
         for item in self._actions:
             menu.addAction(item)
 
-    def play(self):
-        self.connect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), SIGNAL("finished()"))
+    def play(self):        
+        self.connect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), self._finish)
         self._exercise.play()
+        self._msgBox = QMessageBox()
+        self._msgBox.setText(QString(self._exercise.description()))
+        self._msgBox.exec_()
+        QCoreApplication.processEvents()
+    
+    def _finish(self):
+        self._msgBox.close()
+        self.emit(SIGNAL("finished()"))
+        pass
 
     def log(self, logger):        
         assert isinstance(self._exercise, ExerciseNode)

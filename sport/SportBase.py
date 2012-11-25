@@ -9,6 +9,7 @@ class SportBase(TreeNode):
         super(SportBase, self).__init__(name, parent)
         self._isDeleted = False
         self._deletedIcon = None
+        self._description = ""
 
     def deletedIcon(self):
         return self._deletedIcon
@@ -23,6 +24,13 @@ class SportBase(TreeNode):
     def setIsDeleted(self, deleted):
         assert isinstance(deleted, bool)
         self._isDeleted = deleted
+
+    def description(self):
+        return self._description
+
+    def setDescription(self, description):
+        assert isinstance(description, (str, unicode))
+        self._description = description
 
     def __getstate__(self):
         odict = self.__dict__.copy()

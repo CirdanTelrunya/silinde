@@ -13,16 +13,8 @@ from Logger import Logger
 class SequenceNode(SportBase):
     """ un commentaire"""
     def __init__(self, name='', parent=None):
-        super(SequenceNode, self).__init__(name, parent)
-        self._description = ""
+        super(SequenceNode, self).__init__(name, parent)        
         self._repetition = 1
-
-    def description(self):
-        return self._description
-
-    def setDescription(self, description):
-        assert isinstance(description, (str, unicode))
-        self._description = description
 
     def repetition(self):
         return self._repetition
@@ -48,12 +40,14 @@ class SequenceView(QDialog):
         else:
             self._sequence = sequence
         self.ui.ldtName.setText(self._sequence.name())
+        self.ui.tdtDescription.setPlainText(self._sequence.description())
         if isinstance(self._sequence.repetition(), int):
             self.ui.sbxRepetition.setValue(self._sequence.repetition())        
         
     def accept(self):
         self._sequence.setName(str(self.ui.ldtName.text()))
         self._sequence.setRepetition(self.ui.sbxRepetition.value())
+        self._sequence.setDescription(str(self.ui.tdtDescription.toPlainText()))
         QDialog.accept(self)
 
     def getSequenceNode(self):

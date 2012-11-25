@@ -16,15 +16,6 @@ class TrainingNode(SportBase):
     """ un commentaire"""
     def __init__(self, name='', parent=None):
         super(TrainingNode, self).__init__(name, parent)
-        self._description = ""
-        
-    def setDescription(self, description):
-        assert isinstance(description, (str, unicode))
-        self._description = description
-
-    def description(self):
-        assert isinstance(self._description, (str, unicode))
-        return self._description
 
 class TrainingView(QDialog):
     def __init__(self, parent=None, training=None):
@@ -132,7 +123,6 @@ class TrainingCtl(QObject):
     def __playTraining(self):
         assert isinstance(self._training, TrainingNode)
         assert self._ctl == None
-        print "play"
         if self._current == None:
             self._current = self._training.child(0)
         else:
@@ -151,7 +141,7 @@ class TrainingCtl(QObject):
             self._ctl.play()
         else:
             if self._logger is not None:
-                self._logger.save('/tmp/save.csv')
+                self._logger.save('/tmp/save.csv')    
 
     def __nextPlay(self):
         assert self._ctl != None

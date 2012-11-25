@@ -13,19 +13,11 @@ class SeriesNode(SportBase):
     """ un commentaire"""
     def __init__(self, name='', parent=None):
         super(SeriesNode, self).__init__(name, parent)
-        self._description = ""
         self._repetition = None
         self._duration = None
         self._sound = None
         self.setIcon(":/icons/series.png")
         self.setDeletedIcon(":/icons/series_delete.png")
-
-    def description(self):
-        return self._description
-
-    def setDescription(self, description):
-        assert isinstance(description, (str, unicode))
-        self._description = description
 
     def repetition(self):
         return self._repetition
@@ -71,6 +63,7 @@ class SeriesView(QDialog):
             assert isinstance(series, SeriesNode)
             self._series = series
         self.ui.ldtName.setText(self._series.name())
+        self.ui.tdtDescription.setPlainText(self._series.description())
         if isinstance(self._series.repetition(), int):
             self.ui.sbxRepetition.setValue(self._series.repetition())
         if isinstance(self._series.duration(), (int, float)):
@@ -87,6 +80,7 @@ class SeriesView(QDialog):
         self._series.setRepetition(self.ui.sbxRepetition.value())
         self._series.setDuration(self.ui.sbxDuration.value())
         self._series.setSound(str(self.ui.cbxSound.currentText()))
+        self._series.setDescription(str(self.ui.tdtDescription.toPlainText()))
         QDialog.accept(self)
     def getSeriesNode(self):
         assert isinstance(self._series, SeriesNode)
@@ -141,6 +135,10 @@ class SeriesCtl(QObject):
         self.connect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), self.__receipt)
         self.__cpt = 1
         self._series.play()
+        self._msgBox = QMessageBox()
+        self._msgBox.setText(QString(self._series.description()))
+        self._msgBox.exec_()
+        QCoreApplication.processEvents()
 
     def log(self, logger):        
         assert isinstance(self._series, SeriesNode)
@@ -156,7 +154,7 @@ class SeriesCtl(QObject):
 
     def __receipt(self):
         if(self.__cpt == self._series.repetition()):
-            print "OK"
+            self._msgBox.close()
             self.disconnect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), self.__receipt)
             self.emit(SIGNAL("finished()"))
         else:
