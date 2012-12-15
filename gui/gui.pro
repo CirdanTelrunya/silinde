@@ -3,5 +3,6 @@ FORMS += Training.ui \
     Exercise.ui \
     MainWindow.ui \
     SoundView.ui \
-    Sequence.ui
+    Sequence.ui \
+    Playlist.ui
 RESOURCES += icons.qrc
