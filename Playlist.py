@@ -6,6 +6,7 @@ from PyQt4.QtGui import *
 from PlaylistUi import Ui_Playlist
 import sys
 from SoundMgr import SoundMgr
+import itertools
 
 class DescriptionItem(object):
     def __init__ (self):
@@ -39,43 +40,27 @@ class Playlist(object):
             for sound in sounds:
                 assert isinstance(sound, SoundItem)
                 print str(sound)
+    
+    def generator(self):
+        for desc, sounds in self._list:
+            # yield desc
+            for sound in sounds:
+                assert isinstance(sound, SoundItem)
+                yield desc, sound
 
-class Iterator(object):
-    def __init__(self, playlist):
-        assert isinstance(playlist, Playlist)
-        self._playlist = playlist
-        self._current_desc = 0
-        self._current_sound = 0
-
-    def __iter__(self):
-        return self
-
-    def next(self):
-        if self._current_desc < len(self._playlist._list):
-            desc, sounds = self._playlist._list[self._current_desc]
-            sound = None
-            if self._current_sound < len(sounds):                
-                self._current_sound += 1
-                sound = sounds[self._current_sound - 1]
-            else:
-                self._current_sound = 0
-                self._current_desc += 1
-
-            return desc, sound
-        else:
-            raise StopIteration
+    def nbTotalSounds(self):
+        sum = 0
+        for desc, sounds in self._list:
+            sum = sum + len(sounds)
+        return sum
 
 class PlaylistView(QDialog):
     def __init__(self, playlist, parent=None):
         super(PlaylistView, self).__init__(parent)
         assert isinstance(playlist, Playlist)
         self._playlist = playlist
-        self._current = Iterator(playlist)
+        self._current = None
         self._continue = False
-
-        size = 0
-        for i in Iterator(playlist):
-            size += 1
 
         self.ctimer = QTimer()
         self.ctimer.setSingleShot(True)
@@ -88,7 +73,7 @@ class PlaylistView(QDialog):
         self.ui.iconPause = QIcon.fromTheme("media-playback-pause")
         self.ui.btnPlayPause.setIcon(self.ui.iconStart)
         self.ui.pbrSession.setMinimum(0)
-        self.ui.pbrSession.setMaximum(size)
+        self.ui.pbrSession.setMaximum(playlist.nbTotalSounds())
         self.ui.pbrSession.setValue(0)
         self.ctimer.timeout.connect(self._play)
 
@@ -107,13 +92,16 @@ class PlaylistView(QDialog):
             
     def _play(self):
         if(self._continue):
+            if self._current == None:
+                self._current = self._playlist.generator()
+            
             try:
                 desc, sound = self._current.next()
                 print str(desc)+" "+str(sound)
                 self.ui.pbrSession.setValue(self.ui.pbrSession.value()+1)
                 self.ctimer.start(1000)
             except StopIteration:
-                self._current = Iterator(playlist)
+                self._current = None
                 self.ui.btnPlayPause.toggle()
                 pass
         pass
@@ -125,7 +113,7 @@ if __name__ == "__main__":
         desc = DescriptionItem()
         desc.description = "Hop" + str(j)
         plop = []
-        for i in xrange(1, 2):
+        for i in xrange(0, 2):
             s = SoundItem()
             s.sound = "sound_" + str(i)
             plop.append(s)
