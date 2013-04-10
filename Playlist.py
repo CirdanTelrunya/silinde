@@ -61,9 +61,7 @@ class PlaylistView(QDialog):
         self._playlist = playlist
         self._current = None
         self._continue = False
-
-        self.ctimer = QTimer()
-        self.ctimer.setSingleShot(True)
+        self._waiting = False
         self.ui = Ui_Playlist()
         self.ui.setupUi(self)
         
@@ -75,34 +73,45 @@ class PlaylistView(QDialog):
         self.ui.pbrSession.setMinimum(0)
         self.ui.pbrSession.setMaximum(playlist.nbTotalSounds())
         self.ui.pbrSession.setValue(0)
-        self.ctimer.timeout.connect(self._play)
-
 
     def _btnPlayPause_toggled(self, toggle):
         if(toggle):
             if(self.ui.pbrSession.value() == self.ui.pbrSession.maximum()):
                 self.ui.pbrSession.setValue(0)
-
+            
             self.ui.btnPlayPause.setIcon(self.ui.iconPause)
             self._continue = True
-            self.ctimer.start(1000)
+            self.connect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), self._play)
+            self._play()
         else:
             self.ui.btnPlayPause.setIcon(self.ui.iconStart)
             self._continue = False
+            if self._waiting:                
+                self.disconnect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), self._play)
+                self.connect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), self._wait)
+                self.ui.btnPlayPause.setEnabled(False)
+
+    def _wait(self):
+        self.ui.btnPlayPause.setEnabled(True)
+        self.ui.pbrSession.setValue(self.ui.pbrSession.value()+1)
+        self._waiting = False
             
     def _play(self):
         if(self._continue):
             if self._current == None:
                 self._current = self._playlist.generator()
-            
+            if self._waiting:
+                self.ui.pbrSession.setValue(self.ui.pbrSession.value()+1)
             try:
                 desc, sound = self._current.next()
-                print str(desc)+" "+str(sound)
-                self.ui.pbrSession.setValue(self.ui.pbrSession.value()+1)
-                self.ctimer.start(1000)
+                SoundMgr().play(sound.sound, sound.delay)
+                self._waiting = True
+                print str(desc)+" "+str(sound)       
             except StopIteration:
                 self._current = None
                 self.ui.btnPlayPause.toggle()
+                self.disconnect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), self._play)
+                self.ui.pbrSession.setValue(self.ui.pbrSession.value()+1)
                 pass
         pass
     
@@ -115,26 +124,18 @@ if __name__ == "__main__":
         plop = []
         for i in xrange(0, 2):
             s = SoundItem()
-            s.sound = "sound_" + str(i)
+            s.sound = 'anvil'
+            s.delay = 10
             plop.append(s)
         playlist.append(desc, plop)
 
     app = QApplication(sys.argv)
+    # SoundMgr().add('kling', '/usr/lib/openoffice/basis3.2/share/gallery/sounds/kling.wav')
+    SoundMgr().add('anvil', '/usr/lib/openoffice/basis3.2/share/gallery/sounds/ANVIL.WAV')
     # SoundMgr().add('kling', '/usr/lib/libreoffice/basis3.3/share/gallery/sounds/kling.wav')
     d = PlaylistView(playlist)
     d.show()
     d.raise_()
     app.exec_()
-    # SoundMgr.instance = None
-    
-
-
-    # iter = Iterator(playlist)
-    # try:
-    #     while 1:
-    #         desc, sound = iter.next()
-    #         print str(desc)+" "+str(sound)
-    # except StopIteration:
-    #     pass
-
+    SoundMgr.instance = None
     
