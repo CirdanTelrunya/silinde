@@ -9,6 +9,7 @@ from SequenceUi import Ui_Sequence
 from Exercise import *
 from Series import *
 from Logger import Logger
+from Playlist import *
 
 class SequenceNode(SportBase):
     """ un commentaire"""
@@ -28,6 +29,12 @@ class SequenceNode(SportBase):
         logger.log(self._name, self._repetition)
         for child in self.children():
             child.log(logger)
+        pass
+
+    def populatePlaylist(self, playlist):
+        for i in range(self._repetition):
+            for child in self.children():
+                child.populatePlaylist(playlist)
         pass
 
 class SequenceView(QDialog):
@@ -150,48 +157,13 @@ class SequenceCtl(QObject):
         self._sequence.log(logger)
 
     def play(self):
-        if(self._cpt < self._sequence.repetition()):
-            QObject.connect(self, SIGNAL('sequenceFinished()'), self.__nextSequence)
-            self.__playSequence()
-        else:
-            self._cpt = 0
-            self.emit(SIGNAL("finished()"))
-        pass
-    
-    def __playSequence(self):
         assert isinstance(self._sequence, SequenceNode)
-        assert self._ctl == None
-        if self._current == None:
-            self._current = self._sequence.child(0)
-        else:
-            self._current = self._current.nextSibling()
-        node = self._current
-        if node != None:
-            print str(node)
-            if node.type() == "ExerciseNode":
-                self._ctl = ExerciseCtl(self)
-            elif node.type() == "SeriesNode":
-                self._ctl = SeriesCtl(self)
-            elif node.type() == "SequenceNode":
-                self._ctl = SequenceCtl(self)
-            self._ctl.setNode(node)
-            QObject.connect(self._ctl, SIGNAL('finished()'), self.__nextPlay)
-            self._ctl.play()
-        else:
-            self.emit(SIGNAL("sequenceFinished()"))
+        playlist = Playlist()
+        self._sequence.populatePlaylist(playlist)
+        dlg = PlaylistView(playlist)
+        dlg.exec_()
         pass
 
     def __deleteSequence(self):        
         self._sequence.setIsDeleted(True)
 
-    def __nextPlay(self):
-        assert self._ctl != None
-        print "nextPlay"
-        QObject.disconnect(self._ctl, SIGNAL('finished()'), self.__nextPlay)
-        self._ctl = None # disconnect
-        self.__playSequence()
-
-    def __nextSequence(self):
-        QObject.disconnect(self, SIGNAL('sequenceFinished()'), self.__nextSequence)
-        self._cpt += 1
-        self.play()

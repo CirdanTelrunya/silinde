@@ -8,6 +8,7 @@ from SportBase import SportBase
 from ExerciseUi import Ui_Exercise
 from SoundMgr import SoundMgr
 from Logger import Logger
+from Playlist import *
 
 class ExerciseNode(SportBase):
     """ un commentaire"""
@@ -32,14 +33,17 @@ class ExerciseNode(SportBase):
         assert isinstance(sound, (str, unicode))
         self._sound = sound
 
-    def play(self):
-        print self._name
-        if self._sound != None:
-            SoundMgr().play(self._sound, self._duration)
     def log(self, logger):
         assert isinstance(logger, Logger)
         logger.log(self._name, self._duration)
         pass
+    def populatePlaylist(self, playlist):
+        desc = DescriptionItem()
+        desc.description = str(self.name()) + "\n" +  str(self.description())
+        sound = SoundItem()
+        sound.delay = self.duration()
+        sound.sound = self.sound()
+        playlist.append(desc, [sound])
 
 class ExerciseView(QDialog):
     def __init__(self, parent=None, exercise=None):
@@ -113,17 +117,12 @@ class ExerciseCtl(QObject):
         for item in self._actions:
             menu.addAction(item)
 
-    def play(self):        
-        self.connect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), self._finish)
-        self._exercise.play()
-        self._msgBox = QMessageBox()
-        self._msgBox.setText(QString(self._exercise.description()))
-        self._msgBox.exec_()
-        QCoreApplication.processEvents()
-    
-    def _finish(self):
-        self._msgBox.close()
-        self.emit(SIGNAL("finished()"))
+    def play(self):
+        assert isinstance(self._exercise, ExerciseNode)
+        playlist = Playlist()
+        self._exercise.populatePlaylist(playlist)
+        dlg = PlaylistView(playlist)
+        dlg.exec_()
         pass
 
     def log(self, logger):        

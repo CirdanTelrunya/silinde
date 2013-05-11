@@ -122,36 +122,6 @@ class TrainingCtl(QObject):
 
     def __playTraining(self):
         assert isinstance(self._training, TrainingNode)
-        assert self._ctl == None
-        if self._current == None:
-            self._current = self._training.child(0)
-        else:
-            self._current = self._current.nextSibling()
-        node = self._current
-        if node != None:
-            print str(node)
-            if node.type() == "ExerciseNode":
-                self._ctl = ExerciseCtl(self)
-            elif node.type() == "SeriesNode":
-                self._ctl = SeriesCtl(self)
-            elif node.type() == "SequenceNode":
-                self._ctl = SequenceCtl(self)
-            self._ctl.setNode(node)
-            QObject.connect(self._ctl, SIGNAL('finished()'), self.__nextPlay)
-            self._ctl.play()
-        else:
-            if self._logger is not None:
-                self._logger.save('/tmp/save.csv')    
-
-    def __nextPlay(self):
-        assert self._ctl != None
-        print "nextPlay"
-        if self._logger is not None:
-            self._ctl.log(self._logger)
-        QObject.disconnect(self._ctl, SIGNAL('finished()'), self.__nextPlay)
-        self._ctl = None # disconnect
-        self.__playTraining()
-        
         
 
     def populateMenu(self, menu):

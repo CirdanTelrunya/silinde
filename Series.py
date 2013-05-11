@@ -8,6 +8,7 @@ from SportBase import SportBase
 from SeriesUi import Ui_Series
 from SoundMgr import SoundMgr
 from Logger import Logger
+from Playlist import *
 
 class SeriesNode(SportBase):
     """ un commentaire"""
@@ -41,12 +42,18 @@ class SeriesNode(SportBase):
         assert isinstance(sound, (str, unicode))
         self._sound = sound
 
-    def play(self):        
-        print self._name
+    def populatePlaylist(self, playlist):
+        desc = DescriptionItem()
+        desc.description = str(self.name()) + "\n" +  str(self.description())
+        sounds = []
         if self._sound != None:
             for i in range(self._repetition):
-                SoundMgr().play(self._sound, self._duration)
-
+                sound = SoundItem()
+                sound.delay = self.duration()
+                sound.sound = self.sound()
+                sounds.append(sound)
+            playlist.append(desc, sounds)
+            
     def log(self, logger):
         assert isinstance(logger, Logger)
         logger.log(self._name, self._repetition)
@@ -132,13 +139,11 @@ class SeriesCtl(QObject):
 
     def play(self):
         assert isinstance(self._series, SeriesNode)
-        self.connect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), self.__receipt)
-        self.__cpt = 1
-        self._series.play()
-        self._msgBox = QMessageBox()
-        self._msgBox.setText(QString(self._series.description()))
-        self._msgBox.exec_()
-        QCoreApplication.processEvents()
+        playlist = Playlist()
+        self._series.populatePlaylist(playlist)
+        dlg = PlaylistView(playlist)
+        dlg.exec_()
+        pass
 
     def log(self, logger):        
         assert isinstance(self._series, SeriesNode)
@@ -151,11 +156,3 @@ class SeriesCtl(QObject):
 
     def __deleteSeries(self):
         self._series.setIsDeleted(True)
-
-    def __receipt(self):
-        if(self.__cpt == self._series.repetition()):
-            self._msgBox.close()
-            self.disconnect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), self.__receipt)
-            self.emit(SIGNAL("finished()"))
-        else:
-            self.__cpt += 1

@@ -47,3 +47,6 @@ class SportBase(TreeNode):
 
     def log(self, logger):
         pass
+
+    def populatePlaylist(self, playlist):
+        pass
