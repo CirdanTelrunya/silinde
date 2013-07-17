@@ -106,8 +106,9 @@ class PlaylistView(QDialog):
                 desc, sound = self._current.next()
                 SoundMgr().play(sound.sound, sound.delay)
                 self._waiting = True
-                # print str(desc)+" "+str(sound)   
-                self.ui.tdtDescription.setPlainText(str(desc))
+                # print str(desc)+" "+str(sound)
+                print type(desc)
+                self.ui.tdtDescription.setPlainText(QString(desc.description))
             except StopIteration:
                 self._current = None
                 self._waiting = False

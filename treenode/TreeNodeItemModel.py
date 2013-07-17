@@ -86,7 +86,7 @@ class TreeNodeItemModel(QtCore.QAbstractItemModel):
 	# end if
         node = index.internalPointer()
         if role == QtCore.Qt.DisplayRole:
-            return str(node.name())
+            return QtCore.QString(node.name())
         elif role == QtCore.Qt.DecorationRole:
             if node.icon() is not None:
                 return QtGui.QIcon(node.icon())

@@ -39,7 +39,7 @@ class ExerciseNode(SportBase):
         pass
     def populatePlaylist(self, playlist):
         desc = DescriptionItem()
-        desc.description = str(self.name()) + "\n" +  str(self.description())
+        desc.description = self.name() + "\n" +  self.description()
         sound = SoundItem()
         sound.delay = self.duration()
         sound.sound = self.sound()
@@ -54,7 +54,8 @@ class ExerciseView(QDialog):
             self._exercise = ExerciseNode("exercise")
         else:
             self._exercise = exercise
-        self.ui.ldtName.setText(self._exercise.name())
+        tmp = QString()
+        self.ui.ldtName.setText(QString(self._exercise.name()))
         self.ui.tdtDescription.setPlainText(self._exercise.description())
         if isinstance(self._exercise.duration(), (int, float)):
             self.ui.sbxDuration.setValue(self._exercise.duration())
@@ -67,10 +68,10 @@ class ExerciseView(QDialog):
                 self.ui.cbxSound.setCurrentIndex(index)
         
     def accept(self):
-        self._exercise.setName(str(self.ui.ldtName.text()))
+        self._exercise.setName(unicode(self.ui.ldtName.text()))
         self._exercise.setDuration(self.ui.sbxDuration.value())
         self._exercise.setSound(str(self.ui.cbxSound.currentText()))
-        self._exercise.setDescription(str(self.ui.tdtDescription.toPlainText()))
+        self._exercise.setDescription(unicode(self.ui.tdtDescription.toPlainText()))
         QDialog.accept(self)
 
     def getExerciseNode(self):
@@ -109,7 +110,7 @@ class ExerciseCtl(QObject):
     def populateMenu(self, menu):
         assert isinstance( menu, QMenu)        
         menu.addSeparator()
-        action = QAction("[exercise] "+str(self._exercise.name()), self)
+        action = QAction("[exercise] "+QString(self._exercise.name()), self)
         font = QFont()
         font.setBold(True)
         action.setFont(font)
