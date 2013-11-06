@@ -77,22 +77,35 @@ class QSoundWorker(QThread):
         assert isinstance(queue, SharedQueue)
         self._queue = queue
         self._mutex = QMutex()
+        self._timerMutex = QMutex()
+        self._timerCond = QWaitCondition()
         
     def stop(self):
         self._mutex.lock()
         self._continue = False
+        self._timerCond.wakeAll()
         self._mutex.unlock()
 
+    def stopCurrent(self):
+        self._timerCond.wakeAll()
+        pass
+        
     def run(self):
         while self._continue:
             item = self._queue.get()
             if item is not None:
                 assert isinstance(item, SoundItem)
-                sleep(item.startTime)
-                item.sound.play()
-                while mixer.get_busy():
-                    pass
-                self.emit(SIGNAL("soundFinished()"))
+                self._timerMutex.lock()
+                msecs = int(item.startTime * 1000)
+                if(not self._timerCond.wait(self._timerMutex, msecs)):
+                    
+                # sleep(item.startTime)
+                
+                    item.sound.play()
+                    while mixer.get_busy():
+                        pass
+                    self.emit(SIGNAL("soundFinished()"))
+                self._timerMutex.unlock()
         pass
 
 class SharedQueue(object):

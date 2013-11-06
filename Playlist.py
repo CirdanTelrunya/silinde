@@ -73,6 +73,7 @@ class PlaylistView(QDialog):
         self.ui.pbrSession.setMinimum(0)
         self.ui.pbrSession.setMaximum(playlist.nbTotalSounds())
         self.ui.pbrSession.setValue(0)
+        SoundMgr().getWorker().connect(self.ui.btnQuit, SIGNAL("clicked()"), SoundMgr().getWorker().stopCurrent)
 
     def _btnPlayPause_toggled(self, toggle):
         if(toggle):
@@ -88,7 +89,7 @@ class PlaylistView(QDialog):
             self._continue = False
             if self._waiting:                
                 self.disconnect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), self._play)
-                self.connect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), self._wait)                
+                self.connect(SoundMgr().getWorker(), SIGNAL("soundFinished()"), self._wait)          
                 self.ui.btnPlayPause.setEnabled(False)
 
     def _wait(self):
@@ -106,8 +107,7 @@ class PlaylistView(QDialog):
                 desc, sound = self._current.next()
                 SoundMgr().play(sound.sound, sound.delay)
                 self._waiting = True
-                # print str(desc)+" "+str(sound)
-                print type(desc)
+                # print str(desc)+" "+str(sound)                
                 self.ui.tdtDescription.setPlainText(QString(desc.description))
             except StopIteration:
                 self._current = None
